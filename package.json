@@ -57,5 +57,13 @@
   },
   "scripts": {
     "test": "node test/run.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qq744287383/dsh-image-size-guard.git"
+  },
+  "homepage": "https://github.com/qq744287383/dsh-image-size-guard#readme",
+  "bugs": {
+    "url": "https://github.com/qq744287383/dsh-image-size-guard/issues"
   }
 }

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Image size guard",
+    "description": "Model providers set a request size on the gateway, and anything larger is rejected with an error. This plugin sets a request-size limit per model provider: before a request is sent, if its body is larger than the configured value, the harness built-in image offloading kicks in (replacing the image itself with its image path or a note), so the request stays under the configured size."
+  }
+}

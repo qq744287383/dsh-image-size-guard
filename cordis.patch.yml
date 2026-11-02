@@ -1,0 +1,16 @@
+# Insert the Host plugin that keeps model requests under each provider's
+# request-body ceiling by omitting the oldest history images.
+- insert:
+    - id: image-size-guard
+      name: 'dsh-image-size-guard'
+      config:
+        providers:
+          - provider: agent2api
+            maxRequestBytes: 16777216
+            reserveBytes: 262144
+            placeholderBytes: 512
+            targetTurns: 5
+            minFillPercent: 40
+            protectedTurns: 2
+            growthWindow: 8
+            enabled: true

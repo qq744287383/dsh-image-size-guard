@@ -62,10 +62,11 @@ low-water mark.
 dsh plugin --profile web add dsh-image-size-guard
 ```
 
-Or from a checkout:
+Not on npm yet, so install from a clone instead:
 
 ```sh
-dsh plugin --profile web add /path/to/dsh-image-size-guard
+git clone https://github.com/qq744287383/dsh-image-size-guard
+dsh plugin --profile web add ./dsh-image-size-guard
 ```
 
 The bundle inserts its Host row and its Settings page. Restart the Harness once

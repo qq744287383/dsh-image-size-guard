@@ -37,10 +37,11 @@
 dsh plugin --profile web add dsh-image-size-guard
 ```
 
-或从本地目录安装：
+目前还没发布到 npm，从仓库克隆安装：
 
 ```sh
-dsh plugin --profile web add /path/to/dsh-image-size-guard
+git clone https://github.com/qq744287383/dsh-image-size-guard
+dsh plugin --profile web add ./dsh-image-size-guard
 ```
 
 安装后 bundle 会插入 Host 行和设置页。首次安装后重启一次 Harness，浏览器才能加载到新的客户端模块。

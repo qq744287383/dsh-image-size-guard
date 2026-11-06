@@ -108,9 +108,12 @@ assert.deepEqual(loaded.exports.inject, ['slots', 'locale'])
   assert.equal(localeRegistrations[0].ns, 'settings.imageSizeGuard')
   assert.deepEqual(localeRegistrations[0].locales.sort(), ['en', 'zh'])
 
-  // One settings page, at a free id, ordered after the shipped sections.
-  assert.deepEqual(injected, ['settings.section'])
-  assert.equal(registrations.length, 1)
+  // One settings page, plus the Turn-tail notice that makes an omission
+  // visible in the conversation.
+  assert.deepEqual(injected, ['settings.section', 'conversation.chat.turnTail'])
+  assert.equal(registrations.length, 2)
+  assert.equal(registrations[1].options.name, 'conversation.chat.turnTail')
+  assert.equal(registrations[1].options.id, 'image-size-guard.offload')
   const { options, component } = registrations[0]
   assert.equal(options.name, 'settings.section')
   assert.equal(options.id, 'image-size-guard')
@@ -139,7 +142,14 @@ assert.deepEqual(loaded.exports.inject, ['slots', 'locale'])
       bind: (ns) => (key) => (key === 'nav' ? texts[current] : key),
     },
     connection: { rpc: { call: async () => ({ ok: true, value: {} }) } },
-    slots: { inject: (_key, callback) => { callback(); return () => {} }, register: (options) => { ctx.options = options; return () => {} } },
+    slots: {
+      inject: (_key, callback) => { callback(); return () => {} },
+      register: (options) => {
+        // Keep the Settings page: the Turn-tail notice registers separately.
+        if (options.name === 'settings.section') ctx.options = options
+        return () => {}
+      },
+    },
   }
   loaded.exports.apply(ctx)
   assert.equal(ctx.options.label(), 'Image size guard')

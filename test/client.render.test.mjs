@@ -119,6 +119,9 @@ const ctx = {
       return () => {}
     },
     register: (registration, component) => {
+      // Only the Settings page is under test here; the Turn-tail notice also
+      // registers into a slot, and capturing it would shadow this one.
+      if (registration.name !== 'settings.section') return () => {}
       options = registration
       Section = component
       return () => {}

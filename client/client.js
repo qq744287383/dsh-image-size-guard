@@ -65,6 +65,10 @@ window.__ModuleLoader__.load({
       off: '关闭',
       invalidCount: '这些字段要填整数（轮数可以填 0）。',
       invalidPercent: '最低水位要在 1 到 100 之间。',
+      offloadNote: '本轮请求超出预算，{count} 张历史图片改为占位文本发送',
+      offloadMessages: '涉及消息',
+      offloadWhen: '时间',
+      offloadHint: '图片仍在会话里，只是模型收到的是路径占位',
     }
     const en = {
       nav: 'Image size guard',
@@ -119,6 +123,10 @@ window.__ModuleLoader__.load({
       off: 'off',
       invalidCount: 'These fields need whole numbers (turn counts may be 0).',
       invalidPercent: 'The low-water mark must be between 1 and 100.',
+      offloadNote: '{count} history image(s) went out as placeholder text for this request',
+      offloadMessages: 'messages',
+      offloadWhen: 'at',
+      offloadHint: 'the images are still in the session; the model received their paths instead',
     }
 
     // ---- styles ----------------------------------------------------------
@@ -161,6 +169,8 @@ window.__ModuleLoader__.load({
 .dsg-group-title { font-size: 12px; font-weight: 600; }
 .dsg-group-hint { font-size: 11px; line-height: 1.5; color: var(--dsw-alias-label-secondary); }
 .dsg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dsg-turnoff { display: flex; align-items: baseline; gap: 6px; margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: var(--dsw-alias-label-secondary); }
+.dsg-turnoff-mark { flex: none; color: var(--dsw-alias-state-warn-primary); }
 `
 
     function mountStyles() {
@@ -598,6 +608,84 @@ window.__ModuleLoader__.load({
       )
     }
 
+    // ---- turn notice -----------------------------------------------------
+    /**
+     * Sum the image omissions one Turn recorded.
+     *
+     * The durable `image/offload` event is already in the Session event window
+     * the Conversation view loads, so this needs no Host round trip: the Turn
+     * tail renders once the Turn has closed, by which time the decision that
+     * this Turn made is in the window.
+     *
+     * @param snapshot - the Session's event window, or undefined when unavailable.
+     * @param turn - the Turn location, whose `start`/`end` bound the membership.
+     * @param seq - the Turn's own closing sequence, used when no end is recorded.
+     * @returns how many images and messages this Turn retired, and when.
+     */
+    function turnOffloads(snapshot, turn, seq) {
+      const entries = snapshot?.entries
+      if (!Array.isArray(entries)) return { images: 0, messages: 0, time: undefined }
+      const start = turn?.start?.seq ?? 0
+      const end = turn?.end?.seq ?? seq ?? Number.POSITIVE_INFINITY
+      let images = 0
+      let messages = 0
+      let time
+      for (const entry of entries) {
+        if (entry?.type !== 'event') continue
+        const event = entry.event
+        if (event?.type !== 'image/offload') continue
+        if (event.seq < start || event.seq > end) continue
+        for (const target of event.data?.targets ?? []) {
+          images += Array.isArray(target?.imageIndexes) ? target.imageIndexes.length : 0
+          messages += 1
+        }
+        time = event.time
+      }
+      return { images, messages, time }
+    }
+
+    /** Clock time of one omission, for the row's tooltip. */
+    function clockOf(time) {
+      if (typeof time !== 'number') return ''
+      try {
+        return new Date(time).toLocaleTimeString()
+      } catch {
+        return ''
+      }
+    }
+
+    /**
+     * One line under a finished Turn saying how much of its history was sent as
+     * placeholder text.
+     *
+     * Before this existed the omission was invisible: the Session log keeps the
+     * image, the Chat view renders it normally, and only the model saw a path.
+     * The row is deliberately quiet — it appears only on the Turn that retired
+     * something, and carries the message count and time in its tooltip.
+     */
+    function OffloadTurnTail({ turn, seq, t, readOffloads }) {
+      let found
+      try {
+        found = readOffloads(turn, seq)
+      } catch {
+        return null
+      }
+      if (found.images === 0) return null
+      const detail = [
+        `${t('offloadMessages')} ${found.messages}`,
+        clockOf(found.time) === '' ? '' : `${t('offloadWhen')} ${clockOf(found.time)}`,
+        t('offloadHint'),
+      ]
+        .filter((part) => part !== '')
+        .join(' · ')
+      return h(
+        'div',
+        { className: 'dsg-turnoff', title: detail },
+        h('span', { className: 'dsg-turnoff-mark', 'aria-hidden': 'true' }, '⤿'),
+        h('span', null, t('offloadNote').replace('{count}', String(found.images))),
+      )
+    }
+
     // ---- plugin ----------------------------------------------------------
     function apply(ctx) {
       ctx.effect(() => mountStyles(), 'dsh-image-size-guard: styles')
@@ -626,6 +714,27 @@ window.__ModuleLoader__.load({
             inject: () => ({ t, rpcCall }),
           },
           ImageSizeGuardSection,
+        ),
+      )
+      // `sessions` is read optionally: the notice is worth having, but the
+      // settings panel must keep working in a profile without that service.
+      ctx.slots.inject('conversation.chat.turnTail', () =>
+        ctx.slots.register(
+          {
+            name: 'conversation.chat.turnTail',
+            id: 'image-size-guard.offload',
+            order: 15,
+            locale: NS,
+            inject: (sessionId) => ({
+              t,
+              readOffloads: (turn, seq) => {
+                const sessions = typeof ctx.get === 'function' ? ctx.get('sessions', false) : undefined
+                const binding = sessions?.binding?.(sessionId)
+                return turnOffloads(binding?.eventSource?.getSnapshot(), turn, seq)
+              },
+            }),
+          },
+          OffloadTurnTail,
         ),
       )
     }

@@ -56,6 +56,22 @@ Three numbers shape the batch:
 A request that already fits is never trimmed, even when it sits above the
 low-water mark.
 
+### Seeing it in the conversation
+
+An omission leaves no trace in the transcript by itself: the Session keeps the
+image, the Chat view renders it normally, and only the model received a path.
+Every Turn that retired something now ends with one quiet line —
+
+> 3 history image(s) went out as placeholder text for this request
+
+— read from the durable `image/offload` event, which is already in the Session
+event window the Conversation view holds. The row appears on the Turn that
+caused the omission, not on the message that lost its image, because the
+message-decoration seat only receives a message's `source` while the Turn tail
+receives the Turn and its closing sequence. The message count and the time are
+in the row's tooltip. Turns whose events are no longer in the loaded window show
+nothing, so scroll back to load more history before concluding there was none.
+
 ## Install
 
 ```sh

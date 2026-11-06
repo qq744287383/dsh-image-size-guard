@@ -59,6 +59,7 @@ const ctx = {
       return () => {}
     },
     register: (_options, component) => {
+      if (_options.name !== 'settings.section') return () => {}
       Section = component
       return () => {}
     },

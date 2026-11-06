@@ -169,8 +169,11 @@ window.__ModuleLoader__.load({
 .dsg-group-title { font-size: 12px; font-weight: 600; }
 .dsg-group-hint { font-size: 11px; line-height: 1.5; color: var(--dsw-alias-label-secondary); }
 .dsg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.dsg-turnoff { display: flex; align-items: baseline; gap: 6px; margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: var(--dsw-alias-label-secondary); }
+.dsg-turnoff { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin: 6px 0 0; padding: 3px 8px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: var(--dsw-alias-bg-layer-2); font-size: 12px; line-height: 1.4; color: var(--dsw-alias-label-secondary); }
 .dsg-turnoff-mark { flex: none; color: var(--dsw-alias-state-warn-primary); }
+.dsg-turnoff-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsg-turnoff-time { flex: none; font-variant-numeric: tabular-nums; opacity: .75; }
+.dsg-turnoff-time::before { content: '·'; margin-right: 6px; }
 `
 
     function mountStyles() {
@@ -644,24 +647,37 @@ window.__ModuleLoader__.load({
       return { images, messages, time }
     }
 
-    /** Clock time of one omission, for the row's tooltip. */
-    function clockOf(time) {
-      if (typeof time !== 'number') return ''
-      try {
-        return new Date(time).toLocaleTimeString()
-      } catch {
-        return ''
-      }
+    /**
+     * Compact local stamp for one omission.
+     *
+     * `HH:MM` for today, `M-D HH:MM` for anything older: a Turn read back from
+     * history must not look as if it happened this minute.
+     *
+     * @param time - epoch milliseconds of the decision, or undefined.
+     * @returns the stamp, or an empty string when the time is unusable.
+     */
+    function stampOf(time) {
+      if (typeof time !== 'number' || !Number.isFinite(time)) return ''
+      const date = new Date(time)
+      const now = new Date()
+      const pad = (value) => String(value).padStart(2, '0')
+      const clock = `${pad(date.getHours())}:${pad(date.getMinutes())}`
+      const sameDay =
+        date.getFullYear() === now.getFullYear() &&
+        date.getMonth() === now.getMonth() &&
+        date.getDate() === now.getDate()
+      return sameDay ? clock : `${date.getMonth() + 1}-${date.getDate()} ${clock}`
     }
 
     /**
      * One line under a finished Turn saying how much of its history was sent as
-     * placeholder text.
+     * placeholder text, and when.
      *
      * Before this existed the omission was invisible: the Session log keeps the
      * image, the Chat view renders it normally, and only the model saw a path.
-     * The row is deliberately quiet — it appears only on the Turn that retired
-     * something, and carries the message count and time in its tooltip.
+     * The row is a quiet chip rather than plain text so it reads as a notice
+     * about the Turn instead of part of the answer; it appears only on the Turn
+     * that retired something.
      */
     function OffloadTurnTail({ turn, seq, t, readOffloads }) {
       let found
@@ -671,18 +687,16 @@ window.__ModuleLoader__.load({
         return null
       }
       if (found.images === 0) return null
-      const detail = [
-        `${t('offloadMessages')} ${found.messages}`,
-        clockOf(found.time) === '' ? '' : `${t('offloadWhen')} ${clockOf(found.time)}`,
-        t('offloadHint'),
-      ]
+      const stamp = stampOf(found.time)
+      const detail = [`${t('offloadMessages')} ${found.messages}`, stamp === '' ? '' : stamp, t('offloadHint')]
         .filter((part) => part !== '')
         .join(' · ')
       return h(
         'div',
         { className: 'dsg-turnoff', title: detail },
         h('span', { className: 'dsg-turnoff-mark', 'aria-hidden': 'true' }, '⤿'),
-        h('span', null, t('offloadNote').replace('{count}', String(found.images))),
+        h('span', { className: 'dsg-turnoff-text' }, t('offloadNote').replace('{count}', String(found.images))),
+        stamp === '' ? null : h('span', { className: 'dsg-turnoff-time' }, stamp),
       )
     }
 

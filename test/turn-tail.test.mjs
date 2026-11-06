@@ -98,6 +98,13 @@ function offloadEvent(seq, counts) {
   }
 }
 
+/** The stamp the row should print for one timestamp, mirroring the component. */
+function stampOfFixture(time) {
+  const date = new Date(time)
+  const pad = (value) => String(value).padStart(2, '0')
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
 /** A closed Turn spanning `start..end`. */
 const turn = (start, end) => ({ turn: 1, start: { seq: start }, end: { seq: end }, status: 'closed', steps: [] })
 
@@ -123,13 +130,39 @@ function render({ window, turn: location, seq, sessions }) {
   assert.equal(element, null, 'no omission, no row')
 }
 
-// ---- 3. a Turn that retired images says how many ----
+// ---- 3. a Turn that retired images says how many, and when ----
 {
-  const window = { entries: [offloadEvent(15, [2, 1])] }
+  const now = Date.now()
+  const window = { entries: [{ ...offloadEvent(15, [2, 1]), event: { ...offloadEvent(15, [2, 1]).event, time: now } }] }
   const { element } = render({ window, turn: turn(10, 20), seq: 20 })
   assert.ok(element, 'the row appears')
   assert.ok(textOf(element).includes('3'), 'the count sums every retired occurrence')
   assert.ok(textOf(element).includes('{count}') === false, 'the placeholder is substituted')
+  // The time is part of the row, not only its tooltip.
+  const stamp = element.children.find((child) => String(child.props.className ?? '').includes('dsg-turnoff-time'))
+  assert.ok(stamp, 'the row carries a visible time')
+  assert.equal(textOf(stamp), stampOfFixture(now), 'today is shown as HH:MM')
+  assert.ok(/^\d{2}:\d{2}$/.test(textOf(stamp)))
+}
+
+// ---- 3b. an older Turn shows its date, so history cannot look fresh ----
+{
+  const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000
+  const window = { entries: [{ ...offloadEvent(15, [1]), event: { ...offloadEvent(15, [1]).event, time: threeDaysAgo } }] }
+  const { element } = render({ window, turn: turn(10, 20), seq: 20 })
+  const stamp = element.children.find((child) => String(child.props.className ?? '').includes('dsg-turnoff-time'))
+  assert.ok(/^\d{1,2}-\d{1,2} \d{2}:\d{2}$/.test(textOf(stamp)), `expected a dated stamp, got ${textOf(stamp)}`)
+}
+
+// ---- 3c. an unusable time degrades to no stamp rather than a wrong one ----
+{
+  const window = { entries: [{ ...offloadEvent(15, [1]), event: { ...offloadEvent(15, [1]).event, time: undefined } }] }
+  const { element } = render({ window, turn: turn(10, 20), seq: 20 })
+  assert.equal(
+    element.children.some((child) => String(child.props.className ?? '').includes('dsg-turnoff-time')),
+    false,
+    'no time, no stamp',
+  )
 }
 
 // ---- 4. membership is the Turn's own range, not the whole window ----

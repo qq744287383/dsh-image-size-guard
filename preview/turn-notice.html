@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh">
+<meta charset="utf-8">
+<title>图片体积守卫 · 轮次提示预览</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    /* Fallbacks only: the app supplies these from its theme. */
+    --light-bg-base: #ffffff; --light-bg-layer-1: #ffffff; --light-bg-layer-2: #f4f5f7;
+    --light-border-l1: #e4e6ea; --light-label-primary: #16181d; --light-label-secondary: #6b7280;
+    --light-warn: #b45309;
+    --dark-bg-base: #17181b; --dark-bg-layer-1: #17181b; --dark-bg-layer-2: #24262b;
+    --dark-border-l1: #34373d; --dark-label-primary: #eceef2; --dark-label-secondary: #9aa0aa;
+    --dark-warn: #e0a355;
+  }
+  body { margin: 0; font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  section { padding: 24px 28px 32px; }
+  section.light { background: var(--light-bg-base); color: var(--light-label-primary); }
+  section.dark { background: var(--dark-bg-base); color: var(--dark-label-primary); }
+  section.light { --dsw-alias-bg-base: var(--light-bg-base); --dsw-alias-bg-layer-1: var(--light-bg-layer-1); --dsw-alias-bg-layer-2: var(--light-bg-layer-2); --dsw-alias-border-l1: var(--light-border-l1); --dsw-alias-border-l2: var(--light-border-l1); --dsw-alias-label-primary: var(--light-label-primary); --dsw-alias-label-secondary: var(--light-label-secondary); --dsw-alias-state-warn-primary: var(--light-warn); --dsw-alias-brand-primary: #2563eb; --dsw-alias-state-error-primary: #b91c1c; --dsw-alias-state-success-primary: #15803d; }
+  section.dark { --dsw-alias-bg-base: var(--dark-bg-base); --dsw-alias-bg-layer-1: var(--dark-bg-layer-1); --dsw-alias-bg-layer-2: var(--dark-bg-layer-2); --dsw-alias-border-l1: var(--dark-border-l1); --dsw-alias-border-l2: var(--dark-border-l1); --dsw-alias-label-primary: var(--dark-label-primary); --dsw-alias-label-secondary: var(--dark-label-secondary); --dsw-alias-state-warn-primary: var(--dark-warn); --dsw-alias-brand-primary: #6ea8fe; --dsw-alias-state-error-primary: #f87171; --dsw-alias-state-success-primary: #4ade80; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  p.hint { margin: 0 0 20px; font-size: 12px; opacity: .7; }
+  .sample { margin: 0 0 18px; }
+  .sample > .label { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; opacity: .55; margin-bottom: 6px; }
+  .bubble { padding: 10px 12px; border-radius: 10px; background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-border-l1); color: var(--dsw-alias-label-primary); }
+
+.dsg-root { display: flex; flex-direction: column; gap: 16px; color: var(--dsw-alias-label-primary); }
+.dsg-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 13px; line-height: 1.5; }
+.dsg-list { display: flex; flex-direction: column; gap: 8px; }
+.dsg-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 10px; background: var(--dsw-alias-bg-layer-1); }
+.dsg-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.dsg-provider { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsg-meta { font-size: 12px; color: var(--dsw-alias-label-secondary); }
+.dsg-switch { display: inline-flex; align-items: center; gap: 8px; padding: 0; border: 0; border-radius: 6px; background: 0 0; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.dsg-switch[aria-checked="true"] { color: var(--dsw-alias-label-primary); }
+.dsg-switch:disabled { color: var(--dsw-alias-label-secondary); opacity: .6; cursor: default; }
+.dsg-switch:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: 2px; }
+.dsg-switch-track { position: relative; display: inline-block; flex: none; width: 26px; height: 14px; border-radius: 7px; background: var(--dsw-alias-border-l2); transition: background-color .12s ease-in-out; }
+.dsg-switch-track[data-on] { background: var(--dsw-alias-state-success-primary); }
+.dsg-switch-thumb { position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--dsw-alias-bg-layer-1); transition: transform .12s ease-in-out; }
+.dsg-switch-track[data-on] .dsg-switch-thumb { transform: translateX(12px); }
+.dsg-row-off .dsg-provider, .dsg-row-off .dsg-meta { opacity: .65; }
+.dsg-actions { display: flex; gap: 6px; }
+.dsg-btn { font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-layer-2); color: var(--dsw-alias-label-primary); cursor: pointer; }
+.dsg-btn:hover:not(:disabled) { border-color: var(--dsw-alias-border-l2); }
+.dsg-btn:disabled { opacity: .5; cursor: default; }
+.dsg-btn-primary { background: var(--dsw-alias-brand-primary); border-color: var(--dsw-alias-brand-primary); color: #fff; }
+.dsg-btn-danger { color: var(--dsw-alias-state-error-primary); border-color: var(--dsw-alias-state-error-primary); }
+.dsg-form { display: flex; flex-direction: column; gap: 12px; padding: 14px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 10px; background: var(--dsw-alias-bg-layer-1); }
+.dsg-field { display: flex; flex-direction: column; gap: 4px; }
+.dsg-label { font-size: 12px; font-weight: 600; }
+.dsg-hint { font-size: 11px; color: var(--dsw-alias-label-secondary); }
+.dsg-input { font: inherit; font-size: 13px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-base); color: var(--dsw-alias-label-primary); }
+.dsg-input:focus { outline: 2px solid var(--dsw-alias-brand-primary); outline-offset: -1px; }
+.dsg-error { font-size: 12px; color: var(--dsw-alias-state-error-primary); }
+.dsg-inline { display: flex; align-items: center; gap: 8px; }
+.dsg-empty { padding: 20px; text-align: center; font-size: 13px; color: var(--dsw-alias-label-secondary); border: 1px dashed var(--dsw-alias-border-l1); border-radius: 10px; }
+.dsg-suggest { display: flex; flex-wrap: wrap; gap: 6px; }
+.dsg-mib { font-size: 11px; color: var(--dsw-alias-label-secondary); }
+.dsg-group { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; border-top: 1px solid var(--dsw-alias-border-l1); }
+.dsg-group-title { font-size: 12px; font-weight: 600; }
+.dsg-group-hint { font-size: 11px; line-height: 1.5; color: var(--dsw-alias-label-secondary); }
+.dsg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dsg-turnoff { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin: 6px 0 0; padding: 3px 8px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: var(--dsw-alias-bg-layer-2); font-size: 12px; line-height: 1.4; color: var(--dsw-alias-label-secondary); }
+.dsg-turnoff-mark { flex: none; color: var(--dsw-alias-state-warn-primary); }
+.dsg-turnoff-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsg-turnoff-time { flex: none; font-variant-numeric: tabular-nums; opacity: .75; }
+.dsg-turnoff-time::before { content: '·'; margin-right: 6px; }
+
+</style>
+<section class="light">
+  <h1>轮次提示 · 浅色</h1>
+  <p class="hint">真实间距与排版；颜色为本页回退值，应用内由 Harness 主题提供。</p>
+  <div class="sample"><div class="label">今天</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，3 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
+  <div class="sample"><div class="label">往期</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，6 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">11-3 09:12</span></div></div></div>
+  <div class="sample"><div class="label">English</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">2 history image(s) went out as placeholder text for this request</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
+  <div class="sample"><div class="label">无时间（时间不可用）</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，1 张历史图片改为占位文本发送</span></div></div></div>
+</section>
+<section class="dark">
+  <h1>轮次提示 · 深色</h1>
+  <p class="hint">真实间距与排版；颜色为本页回退值，应用内由 Harness 主题提供。</p>
+  <div class="sample"><div class="label">今天</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，3 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
+  <div class="sample"><div class="label">往期</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，6 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">11-3 09:12</span></div></div></div>
+  <div class="sample"><div class="label">English</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">2 history image(s) went out as placeholder text for this request</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
+  <div class="sample"><div class="label">无时间（时间不可用）</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，1 张历史图片改为占位文本发送</span></div></div></div>
+</section>

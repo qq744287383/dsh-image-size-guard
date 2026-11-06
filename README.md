@@ -62,7 +62,7 @@ An omission leaves no trace in the transcript by itself: the Session keeps the
 image, the Chat view renders it normally, and only the model received a path.
 Every Turn that retired something now ends with one quiet chip —
 
-> ⤿ 3 history image(s) went out as placeholder text for this request · 23:41
+> ⤿ Triggered by Image size guard · 3 history image(s) sent as placeholder text · 23:41
 
 — read from the durable `image/offload` event, which is already in the Session
 event window the Conversation view holds. The stamp is the decision's local
@@ -70,8 +70,9 @@ time: `HH:MM` for today, `M-D HH:MM` for anything older, so a Turn read back fro
 history cannot look as if it just happened. The row appears on the Turn that
 caused the omission, not on the message that lost its image, because the
 message-decoration seat only receives a message's `source` while the Turn tail
-receives the Turn and its closing sequence. The message count sits in the row's
-tooltip.
+receives the Turn and its closing sequence. The first segment names this plugin,
+so a reader of a shared transcript can tell what produced the notice. The message
+count sits in the row's tooltip.
 
 `node scripts/preview-turn-notice.mjs` renders `preview/turn-notice.html`, a
 standalone page showing the chip in both themes with the bundle's real CSS. Turns whose events are no longer in the loaded window show

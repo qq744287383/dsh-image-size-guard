@@ -65,7 +65,8 @@ window.__ModuleLoader__.load({
       off: '关闭',
       invalidCount: '这些字段要填整数（轮数可以填 0）。',
       invalidPercent: '最低水位要在 1 到 100 之间。',
-      offloadNote: '本轮请求超出预算，{count} 张历史图片改为占位文本发送',
+      attribution: '由{plugin}触发',
+      offloadNote: '{count} 张历史图片改为占位文本发送',
       offloadMessages: '涉及消息',
       offloadWhen: '时间',
       offloadHint: '图片仍在会话里，只是模型收到的是路径占位',
@@ -123,7 +124,8 @@ window.__ModuleLoader__.load({
       off: 'off',
       invalidCount: 'These fields need whole numbers (turn counts may be 0).',
       invalidPercent: 'The low-water mark must be between 1 and 100.',
-      offloadNote: '{count} history image(s) went out as placeholder text for this request',
+      attribution: 'Triggered by {plugin}',
+      offloadNote: '{count} history image(s) sent as placeholder text',
       offloadMessages: 'messages',
       offloadWhen: 'at',
       offloadHint: 'the images are still in the session; the model received their paths instead',
@@ -171,9 +173,10 @@ window.__ModuleLoader__.load({
 .dsg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .dsg-turnoff { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin: 6px 0 0; padding: 3px 8px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: var(--dsw-alias-bg-layer-2); font-size: 12px; line-height: 1.4; color: var(--dsw-alias-label-secondary); }
 .dsg-turnoff-mark { flex: none; color: var(--dsw-alias-state-warn-primary); }
+.dsg-turnoff-source { flex: none; font-weight: 500; color: var(--dsw-alias-label-primary); }
 .dsg-turnoff-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dsg-turnoff-time { flex: none; font-variant-numeric: tabular-nums; opacity: .75; }
-.dsg-turnoff-time::before { content: '·'; margin-right: 6px; }
+.dsg-turnoff-text::before, .dsg-turnoff-time::before { content: '·'; margin-right: 6px; opacity: .55; }
 `
 
     function mountStyles() {
@@ -695,6 +698,9 @@ window.__ModuleLoader__.load({
         'div',
         { className: 'dsg-turnoff', title: detail },
         h('span', { className: 'dsg-turnoff-mark', 'aria-hidden': 'true' }, '⤿'),
+        // Attribution first: a reader who did not install this plugin (or
+        // forgot) must be able to tell where the notice came from.
+        h('span', { className: 'dsg-turnoff-source' }, t('attribution').replace('{plugin}', t('nav'))),
         h('span', { className: 'dsg-turnoff-text' }, t('offloadNote').replace('{count}', String(found.images))),
         stamp === '' ? null : h('span', { className: 'dsg-turnoff-time' }, stamp),
       )

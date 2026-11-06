@@ -19,19 +19,21 @@ const css = source.match(/const CSS = `([\s\S]*?)`\n/)?.[1]
 if (css === undefined) throw new Error('client/client.js no longer declares a CSS template literal')
 
 /** One rendered notice, as the component builds it. */
-function notice({ text, stamp }) {
+function notice({ source, text, stamp }) {
   return `<div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位">`
     + '<span class="dsg-turnoff-mark" aria-hidden="true">⤿</span>'
+    + `<span class="dsg-turnoff-source">${source}</span>`
     + `<span class="dsg-turnoff-text">${text}</span>`
     + (stamp === undefined ? '' : `<span class="dsg-turnoff-time">${stamp}</span>`)
     + '</div>'
 }
 
 const samples = [
-  { label: '今天', notice: notice({ text: '本轮请求超出预算，3 张历史图片改为占位文本发送', stamp: '23:41' }) },
-  { label: '往期', notice: notice({ text: '本轮请求超出预算，6 张历史图片改为占位文本发送', stamp: '11-3 09:12' }) },
-  { label: 'English', notice: notice({ text: '2 history image(s) went out as placeholder text for this request', stamp: '23:41' }) },
-  { label: '无时间（时间不可用）', notice: notice({ text: '本轮请求超出预算，1 张历史图片改为占位文本发送' }) },
+  { label: '今天', notice: notice({ source: '由图片体积守卫触发', text: '3 张历史图片改为占位文本发送', stamp: '23:41' }) },
+  { label: '往期', notice: notice({ source: '由图片体积守卫触发', text: '6 张历史图片改为占位文本发送', stamp: '11-3 09:12' }) },
+  { label: 'English', notice: notice({ source: 'Triggered by Image size guard', text: '2 history image(s) sent as placeholder text', stamp: '23:41' }) },
+  { label: '窄列宽（文字截断）', notice: notice({ source: '由图片体积守卫触发', text: '6 张历史图片改为占位文本发送', stamp: '11-3 09:12' }), narrow: true },
+  { label: '无时间（时间不可用）', notice: notice({ source: '由图片体积守卫触发', text: '1 张历史图片改为占位文本发送' }) },
 ]
 
 const page = `<!doctype html>
@@ -59,13 +61,14 @@ const page = `<!doctype html>
   p.hint { margin: 0 0 20px; font-size: 12px; opacity: .7; }
   .sample { margin: 0 0 18px; }
   .sample > .label { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; opacity: .55; margin-bottom: 6px; }
+  .sample.narrow .bubble { max-width: 300px; }
   .bubble { padding: 10px 12px; border-radius: 10px; background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-border-l1); color: var(--dsw-alias-label-primary); }
 ${css}
 </style>
 <section class="light">
   <h1>轮次提示 · 浅色</h1>
   <p class="hint">真实间距与排版；颜色为本页回退值，应用内由 Harness 主题提供。</p>
-  ${samples.map((sample) => `<div class="sample"><div class="label">${sample.label}</div><div class="bubble">${sample.notice}</div></div>`).join('\n  ')}
+  ${samples.map((sample) => `<div class="sample${sample.narrow === true ? ' narrow' : ''}"><div class="label">${sample.label}</div><div class="bubble">${sample.notice}</div></div>`).join('\n  ')}
 </section>
 <section class="dark">
   <h1>轮次提示 · 深色</h1>

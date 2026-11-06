@@ -165,6 +165,16 @@ function render({ window, turn: location, seq, sessions }) {
   )
 }
 
+// ---- 3d. the row says which plugin produced it ----
+{
+  const window = { entries: [offloadEvent(15, [2])] }
+  const { element, mounted } = render({ window, turn: turn(10, 20), seq: 20 })
+  const source = element.children.find((child) => String(child.props.className ?? '').includes('dsg-turnoff-source'))
+  assert.ok(source, 'the row carries an attribution segment')
+  assert.ok(textOf(source).includes(mounted.dicts.zh.nav), 'the attribution names the plugin')
+  assert.equal(textOf(source).includes('{plugin}'), false, 'the plugin placeholder is substituted')
+}
+
 // ---- 4. membership is the Turn's own range, not the whole window ----
 {
   const window = { entries: [offloadEvent(5, [4]), offloadEvent(15, [1]), offloadEvent(99, [7])] }
@@ -204,11 +214,13 @@ function render({ window, turn: location, seq, sessions }) {
 // ---- 9. both locales name the row ----
 {
   const { dicts } = mount({ window: { entries: [] } })
-  for (const key of ['offloadNote', 'offloadMessages', 'offloadWhen', 'offloadHint']) {
+  for (const key of ['offloadNote', 'offloadMessages', 'offloadWhen', 'offloadHint', 'attribution']) {
     assert.ok(dicts.zh[key] && dicts.en[key], `${key} exists in both locales`)
   }
   assert.ok(dicts.zh.offloadNote.includes('{count}'), 'the count placeholder is in the dictionary')
   assert.ok(dicts.en.offloadNote.includes('{count}'))
+  assert.ok(dicts.zh.attribution.includes('{plugin}'), 'the attribution names the plugin through a placeholder')
+  assert.ok(dicts.en.attribution.includes('{plugin}'))
 }
 
 console.log('all turn-tail tests passed')

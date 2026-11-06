@@ -23,6 +23,7 @@
   p.hint { margin: 0 0 20px; font-size: 12px; opacity: .7; }
   .sample { margin: 0 0 18px; }
   .sample > .label { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; opacity: .55; margin-bottom: 6px; }
+  .sample.narrow .bubble { max-width: 300px; }
   .bubble { padding: 10px 12px; border-radius: 10px; background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-border-l1); color: var(--dsw-alias-label-primary); }
 
 .dsg-root { display: flex; flex-direction: column; gap: 16px; color: var(--dsw-alias-label-primary); }
@@ -64,24 +65,27 @@
 .dsg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .dsg-turnoff { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin: 6px 0 0; padding: 3px 8px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: var(--dsw-alias-bg-layer-2); font-size: 12px; line-height: 1.4; color: var(--dsw-alias-label-secondary); }
 .dsg-turnoff-mark { flex: none; color: var(--dsw-alias-state-warn-primary); }
+.dsg-turnoff-source { flex: none; font-weight: 500; color: var(--dsw-alias-label-primary); }
 .dsg-turnoff-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dsg-turnoff-time { flex: none; font-variant-numeric: tabular-nums; opacity: .75; }
-.dsg-turnoff-time::before { content: '·'; margin-right: 6px; }
+.dsg-turnoff-text::before, .dsg-turnoff-time::before { content: '·'; margin-right: 6px; opacity: .55; }
 
 </style>
 <section class="light">
   <h1>轮次提示 · 浅色</h1>
   <p class="hint">真实间距与排版；颜色为本页回退值，应用内由 Harness 主题提供。</p>
-  <div class="sample"><div class="label">今天</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，3 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
-  <div class="sample"><div class="label">往期</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，6 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">11-3 09:12</span></div></div></div>
-  <div class="sample"><div class="label">English</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">2 history image(s) went out as placeholder text for this request</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
-  <div class="sample"><div class="label">无时间（时间不可用）</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，1 张历史图片改为占位文本发送</span></div></div></div>
+  <div class="sample"><div class="label">今天</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-source">由图片体积守卫触发</span><span class="dsg-turnoff-text">3 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
+  <div class="sample"><div class="label">往期</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-source">由图片体积守卫触发</span><span class="dsg-turnoff-text">6 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">11-3 09:12</span></div></div></div>
+  <div class="sample"><div class="label">English</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-source">Triggered by Image size guard</span><span class="dsg-turnoff-text">2 history image(s) sent as placeholder text</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
+  <div class="sample narrow"><div class="label">窄列宽（文字截断）</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-source">由图片体积守卫触发</span><span class="dsg-turnoff-text">6 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">11-3 09:12</span></div></div></div>
+  <div class="sample"><div class="label">无时间（时间不可用）</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-source">由图片体积守卫触发</span><span class="dsg-turnoff-text">1 张历史图片改为占位文本发送</span></div></div></div>
 </section>
 <section class="dark">
   <h1>轮次提示 · 深色</h1>
   <p class="hint">真实间距与排版；颜色为本页回退值，应用内由 Harness 主题提供。</p>
-  <div class="sample"><div class="label">今天</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，3 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
-  <div class="sample"><div class="label">往期</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，6 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">11-3 09:12</span></div></div></div>
-  <div class="sample"><div class="label">English</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">2 history image(s) went out as placeholder text for this request</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
-  <div class="sample"><div class="label">无时间（时间不可用）</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-text">本轮请求超出预算，1 张历史图片改为占位文本发送</span></div></div></div>
+  <div class="sample"><div class="label">今天</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-source">由图片体积守卫触发</span><span class="dsg-turnoff-text">3 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
+  <div class="sample"><div class="label">往期</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-source">由图片体积守卫触发</span><span class="dsg-turnoff-text">6 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">11-3 09:12</span></div></div></div>
+  <div class="sample"><div class="label">English</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-source">Triggered by Image size guard</span><span class="dsg-turnoff-text">2 history image(s) sent as placeholder text</span><span class="dsg-turnoff-time">23:41</span></div></div></div>
+  <div class="sample"><div class="label">窄列宽（文字截断）</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-source">由图片体积守卫触发</span><span class="dsg-turnoff-text">6 张历史图片改为占位文本发送</span><span class="dsg-turnoff-time">11-3 09:12</span></div></div></div>
+  <div class="sample"><div class="label">无时间（时间不可用）</div><div class="bubble"><div class="dsg-turnoff" title="涉及消息 3 · 23:41 · 图片仍在会话里，只是模型收到的是路径占位"><span class="dsg-turnoff-mark" aria-hidden="true">⤿</span><span class="dsg-turnoff-source">由图片体积守卫触发</span><span class="dsg-turnoff-text">1 张历史图片改为占位文本发送</span></div></div></div>
 </section>

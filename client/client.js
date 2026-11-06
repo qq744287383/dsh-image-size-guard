@@ -65,8 +65,7 @@ window.__ModuleLoader__.load({
       off: '关闭',
       invalidCount: '这些字段要填整数（轮数可以填 0）。',
       invalidPercent: '最低水位要在 1 到 100 之间。',
-      attribution: '由{plugin}触发',
-      offloadNote: '{count} 张历史图片改为占位文本发送',
+      offloadNote: '本轮请求超出预算，{count} 张历史图片改为占位文本发送',
       offloadMessages: '涉及消息',
       offloadWhen: '时间',
       offloadHint: '图片仍在会话里，只是模型收到的是路径占位',
@@ -124,8 +123,7 @@ window.__ModuleLoader__.load({
       off: 'off',
       invalidCount: 'These fields need whole numbers (turn counts may be 0).',
       invalidPercent: 'The low-water mark must be between 1 and 100.',
-      attribution: 'Triggered by {plugin}',
-      offloadNote: '{count} history image(s) sent as placeholder text',
+      offloadNote: '{count} history image(s) went out as placeholder text for this request',
       offloadMessages: 'messages',
       offloadWhen: 'at',
       offloadHint: 'the images are still in the session; the model received their paths instead',
@@ -699,8 +697,10 @@ window.__ModuleLoader__.load({
         { className: 'dsg-turnoff', title: detail },
         h('span', { className: 'dsg-turnoff-mark', 'aria-hidden': 'true' }, '⤿'),
         // Attribution first: a reader who did not install this plugin (or
-        // forgot) must be able to tell where the notice came from.
-        h('span', { className: 'dsg-turnoff-source' }, t('attribution').replace('{plugin}', t('nav'))),
+        // forgot) must be able to tell where the notice came from. The name is
+        // the same dictionary entry the Settings page uses, so both surfaces
+        // always agree.
+        h('span', { className: 'dsg-turnoff-source' }, t('nav')),
         h('span', { className: 'dsg-turnoff-text' }, t('offloadNote').replace('{count}', String(found.images))),
         stamp === '' ? null : h('span', { className: 'dsg-turnoff-time' }, stamp),
       )

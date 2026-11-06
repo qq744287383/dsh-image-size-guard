@@ -29,11 +29,11 @@ function notice({ source, text, stamp }) {
 }
 
 const samples = [
-  { label: '今天', notice: notice({ source: '由图片体积守卫触发', text: '3 张历史图片改为占位文本发送', stamp: '23:41' }) },
-  { label: '往期', notice: notice({ source: '由图片体积守卫触发', text: '6 张历史图片改为占位文本发送', stamp: '11-3 09:12' }) },
-  { label: 'English', notice: notice({ source: 'Triggered by Image size guard', text: '2 history image(s) sent as placeholder text', stamp: '23:41' }) },
-  { label: '窄列宽（文字截断）', notice: notice({ source: '由图片体积守卫触发', text: '6 张历史图片改为占位文本发送', stamp: '11-3 09:12' }), narrow: true },
-  { label: '无时间（时间不可用）', notice: notice({ source: '由图片体积守卫触发', text: '1 张历史图片改为占位文本发送' }) },
+  { label: '今天', notice: notice({ source: '图片体积守卫', text: '本轮请求超出预算，3 张历史图片改为占位文本发送', stamp: '23:41' }) },
+  { label: '往期', notice: notice({ source: '图片体积守卫', text: '本轮请求超出预算，6 张历史图片改为占位文本发送', stamp: '11-3 09:12' }) },
+  { label: 'English', notice: notice({ source: 'Image size guard', text: '2 history image(s) went out as placeholder text for this request', stamp: '23:41' }) },
+  { label: '窄列宽（文字截断）', notice: notice({ source: '图片体积守卫', text: '本轮请求超出预算，6 张历史图片改为占位文本发送', stamp: '11-3 09:12' }), narrow: true },
+  { label: '无时间（时间不可用）', notice: notice({ source: '图片体积守卫', text: '本轮请求超出预算，1 张历史图片改为占位文本发送' }) },
 ]
 
 const page = `<!doctype html>

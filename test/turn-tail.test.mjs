@@ -165,14 +165,29 @@ function render({ window, turn: location, seq, sessions }) {
   )
 }
 
-// ---- 3d. the row says which plugin produced it ----
+// ---- 3d. the row opens with the plugin's own name ----
 {
   const window = { entries: [offloadEvent(15, [2])] }
   const { element, mounted } = render({ window, turn: turn(10, 20), seq: 20 })
   const source = element.children.find((child) => String(child.props.className ?? '').includes('dsg-turnoff-source'))
   assert.ok(source, 'the row carries an attribution segment')
-  assert.ok(textOf(source).includes(mounted.dicts.zh.nav), 'the attribution names the plugin')
-  assert.equal(textOf(source).includes('{plugin}'), false, 'the plugin placeholder is substituted')
+  assert.equal(textOf(source), mounted.dicts.zh.nav, 'the attribution is exactly the plugin name')
+}
+
+// ---- 3e. the segments read as one line: name · note · time ----
+{
+  const now = Date.now()
+  const window = { entries: [{ ...offloadEvent(15, [3]), event: { ...offloadEvent(15, [3]).event, time: now } }] }
+  const { element, mounted } = render({ window, turn: turn(10, 20), seq: 20 })
+  const segments = element.children.map((child) => ({ className: String(child.props.className ?? ''), text: textOf(child) }))
+  assert.deepEqual(
+    segments.map((segment) => segment.className),
+    ['dsg-turnoff-mark', 'dsg-turnoff-source', 'dsg-turnoff-text', 'dsg-turnoff-time'],
+    'the row is mark, attribution, note, time',
+  )
+  assert.equal(segments[1].text, mounted.dicts.zh.nav)
+  assert.equal(segments[2].text, '本轮请求超出预算，3 张历史图片改为占位文本发送')
+  assert.equal(segments[3].text, stampOfFixture(now))
 }
 
 // ---- 4. membership is the Turn's own range, not the whole window ----
@@ -214,13 +229,13 @@ function render({ window, turn: location, seq, sessions }) {
 // ---- 9. both locales name the row ----
 {
   const { dicts } = mount({ window: { entries: [] } })
-  for (const key of ['offloadNote', 'offloadMessages', 'offloadWhen', 'offloadHint', 'attribution']) {
+  for (const key of ['offloadNote', 'offloadMessages', 'offloadWhen', 'offloadHint']) {
     assert.ok(dicts.zh[key] && dicts.en[key], `${key} exists in both locales`)
   }
   assert.ok(dicts.zh.offloadNote.includes('{count}'), 'the count placeholder is in the dictionary')
   assert.ok(dicts.en.offloadNote.includes('{count}'))
-  assert.ok(dicts.zh.attribution.includes('{plugin}'), 'the attribution names the plugin through a placeholder')
-  assert.ok(dicts.en.attribution.includes('{plugin}'))
+  assert.ok(dicts.zh.offloadNote.startsWith('本轮请求超出预算，'), 'the note states the cause first')
+  assert.ok(dicts.en.offloadNote.includes('went out as placeholder text'))
 }
 
 console.log('all turn-tail tests passed')

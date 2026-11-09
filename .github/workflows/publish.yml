@@ -1,0 +1,34 @@
+name: publish
+
+# Manual only: publishing is a deliberate act, so it never runs on push.
+#
+# The runner reaches registry.npmjs.org over GitHub's own network, which is the
+# point: the machine that maintains this repository cannot always reach the
+# registry, but the pack and the publish do not have to happen there.
+on:
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Pack and verify without publishing'
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # npm provenance signs an attestation with this token.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Test
+        run: npm test
+      - name: Publish
+        run: npm publish --provenance --access public ${{ inputs.dryRun && '--dry-run' || '' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

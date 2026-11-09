@@ -4,3 +4,5 @@ npm-debug.log*
 .npm-cache/
 .DS_Store
 .npm-logs/
+.npmrc-publish
+*.tgz

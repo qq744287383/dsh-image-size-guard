@@ -56,7 +56,8 @@
     }
   },
   "scripts": {
-    "test": "node test/run.mjs"
+    "test": "node test/run.mjs",
+    "prepublishOnly": "npm test"
   },
   "repository": {
     "type": "git",

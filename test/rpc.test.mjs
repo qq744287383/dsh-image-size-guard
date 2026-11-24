@@ -8,7 +8,7 @@ const MiB = 1024 * 1024
  * A context stand-in exposing the optional services the endpoint reads, plus a
  * web server that captures the route it registers.
  */
-function fakeContext({ config, entries = [{ options: { id: 'image-size-guard' } }], admitted = true } = {}) {
+function fakeContext({ config, entries = [{ options: { id: 'image-size-guard' } }] } = {}) {
   const written = []
   const ctx = {
     written,
@@ -19,11 +19,6 @@ function fakeContext({ config, entries = [{ options: { id: 'image-size-guard' } 
             ctx.route = route
             return () => {}
           },
-        }
-      }
-      if (name === 'connection') {
-        return {
-          admit: () => (admitted ? { peer: {} } : { rejection: 401 }),
         }
       }
       if (name === 'llm') {
@@ -77,10 +72,13 @@ function fakeResponse() {
   }
 }
 
+/** An admitted Peer; the carrier supplies one for every authenticated request. */
+const PEER = { principal: 'owner' }
+
 /** Drive the registered route with one request. */
 async function call(ctx, body, options) {
   const res = fakeResponse()
-  await ctx.route.handler(fakeRequest(body, options), res)
+  await ctx.route.handler(fakeRequest(body, options), res, PEER)
   let parsed
   try {
     parsed = res.body === '' ? undefined : JSON.parse(res.body)
@@ -177,13 +175,16 @@ assert.equal(RPC_PATH, '/image-size-guard/limits')
   assert.equal(ctx.written.length, 0, 'a rejected request writes nothing')
 }
 
-// ---- admission is enforced before anything is read ----
+// ---- an unadmitted request is refused before anything is read ----
 {
-  const ctx = fakeContext({ admitted: false })
+  const ctx = fakeContext()
   mountRpc(ctx, () => ctx.config)
-  const result = await call(ctx, { endpoint: 'limits.list' })
-  assert.equal(result.status, 401, 'an unauthenticated caller is refused')
-  assert.equal(result.body, 'unauthorized', 'and learns nothing about the limits')
+  const res = fakeResponse()
+  // The carrier only calls the handler with a Peer it admitted; no Peer means
+  // the route refuses rather than serving an anonymous caller.
+  await ctx.route.handler(fakeRequest({ endpoint: 'limits.list' }), res, undefined)
+  assert.equal(res.status, 401, 'an unauthenticated caller is refused')
+  assert.equal(res.body, 'unauthorized', 'and learns nothing about the limits')
 }
 
 // ---- method and content type are enforced ----

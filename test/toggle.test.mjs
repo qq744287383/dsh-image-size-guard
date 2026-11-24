@@ -58,7 +58,7 @@ async function post(ctx, body) {
       this.body = value ?? ''
     },
   }
-  await ctx.route.handler(req, res)
+  await ctx.route.handler(req, res, { principal: 'owner' })
   return JSON.parse(res.body)
 }
 

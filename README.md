@@ -95,6 +95,11 @@ dsh plugin --profile web add ./dsh-image-size-guard
 The bundle inserts its Host row and its Settings page. Restart the Harness once
 after the first install so the browser picks up the new client module.
 
+Requires DSH `^0.2.3-alpha.2` (`engines.dsh`). The Settings endpoint relies on the
+carrier's own route admission — `auth: 'required'` and the admitted Peer handed
+to the handler — rather than calling `connection.admit` from this plugin, so an
+older Harness refuses the bundle instead of half-loading it.
+
 ## Usage
 
 Open **Settings → Image size guard**. The page lists one row per guarded provider

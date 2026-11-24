@@ -56,6 +56,8 @@ dsh plugin --profile web add ./dsh-image-size-guard
 
 安装后 bundle 会插入 Host 行和设置页。首次安装后重启一次 Harness，浏览器才能加载到新的客户端模块。
 
+要求 DSH `^0.2.3-alpha.2`（`engines.dsh`）。设置页端点改为使用载体自己的路由准入——路由声明 `auth: 'required'`，由载体把准入后的 Peer 交给处理函数——不再由插件调用 `connection.admit`；因此在更旧的 Harness 上，bundle 会被拒绝加载，而不是半加载后失效。
+
 ## 使用
 
 打开 **设置 → 图片体积守卫**。页面按供应商列出限制行，支持添加、编辑、移除和启用/关闭。

@@ -69,7 +69,7 @@ async function call(ctx, body) {
       this.body = value ?? ''
     },
   }
-  await ctx.route.handler(request(body), res)
+  await ctx.route.handler(request(body), res, { principal: 'owner' })
   return res.body === '' ? undefined : JSON.parse(res.body)
 }
 
